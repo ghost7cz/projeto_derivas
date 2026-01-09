@@ -1,0 +1,203 @@
+:root {
+    --primary: #8a2be2;
+    --secondary: #00d4ff;
+    --bg: #0a0a0b;
+    --card-bg: rgba(255, 255, 255, 0.05);
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg);
+    color: white;
+    overflow-x: hidden;
+}
+
+/* Background Dinâmico */
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 30%, #1a1a2e 0%, #0a0a0b 100%);
+    z-index: -1;
+}
+
+/* --- SEÇÃO 1: HERO (INTRODUÇÃO) --- */
+.hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.hero h1 {
+    font-size: 4rem;
+    background: linear-gradient(90deg, #fff, var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: #ccc;
+    max-width: 600px;
+}
+
+.scroll-indicator {
+    margin-top: 50px;
+    animation: bounce 2s infinite;
+}
+
+/* --- SEÇÃO 2: CONTEÚDO (VÍDEO + CARDS) --- */
+.content-section {
+    padding: 100px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 20px;
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 50px rgba(138, 43, 226, 0.3);
+    margin-bottom: 80px;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    border-color: var(--secondary);
+}
+
+.card h3 {
+    color: var(--secondary);
+    font-size: 1.8rem;
+}
+
+.price {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.btn-repo {
+    display: inline-block;
+    margin-top: 50px;
+    padding: 15px 40px;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    border-radius: 50px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Navbar (transparente, fixa e comportamento de sumir ao rolar) */
+.site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: rgba(10, 10, 11, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: white;
+    z-index: 1000;
+    transition: transform 0.28s ease, background 0.2s ease;
+}
+.site-nav img {
+    height: 40px;
+    display: block;
+}
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+.nav-links a {
+    color: #fff;
+    margin-left: 18px;
+    text-decoration: none;
+    font-weight: 600;
+    opacity: 0.95;
+}
+.nome {
+    color: #fff;
+    margin-left: 0;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 30px;
+    opacity: 0.95;
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    pointer-events: none;
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+}
+.site-nav.nav--hidden {
+    transform: translateY(-110%);
+}
+
+/* Não mostrar a navbar em telas móveis */
+@media (max-width: 768px) {
+    .site-nav {
+        display: none;
+    }
+}

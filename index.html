@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derivas Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="site-nav">
+        <div class="brand">
+            <img src="img/botao-de-reproducao.png" alt="Reprodutor de música">
+            <div class="nome" aria-hidden="true">Derivas Editor</div>
+        </div>
+        <div class="nav-links">
+            <a href="#services">Serviços</a>
+            <a href="portfoio.html">Portfólio</a>
+            <a href="#contact">Contato</a>
+        </div>
+    </nav>
+
+    <div class="bg-overlay"></div>
+
+    <section class="hero">
+        <h1>Sua visão, editada com perfeição.</h1>
+        <p>Elevando o nível das suas produções através de storytelling visual e técnicas avançadas de pós-produção.</p>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="video-container">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/watch?v=S-4hwfyK-XQ&list=RDS-4hwfyK-XQ&start_radio=1" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <div class="pricing-grid">
+            <div class="card">
+                <h3>Starter</h3>
+                <div class="price">R$ 297</div>
+                <p>Fundamentos da edição, cortes e ritmo para iniciantes.</p>
+            </div>
+            <div class="card" style="border-color: var(--primary);">
+                <h3>Pro</h3>
+                <div class="price">R$ 597</div>
+                <p>Storytelling avançado, Color Grading e Sound Design.</p>
+            </div>
+            <div class="card">
+                <h3>Elite</h3>
+                <div class="price">R$ 997</div>
+                <p>Mentoria 1 a 1 e acompanhamento de carreira profissional.</p>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <a href="#portfolio" class="btn-repo">EXPLORAR PORTFÓLIO COMPLETO</a>
+        </div>
+    </section>
+    </section>
+
+    <script>
+    // Hide nav on scroll down, show on scroll up
+    (function(){
+        const nav = document.querySelector('.site-nav');
+        if(!nav) return;
+        let lastY = window.scrollY;
+        window.addEventListener('scroll', function(){
+            const currentY = window.scrollY;
+            if (currentY > lastY && currentY > 60) {
+                nav.classList.add('nav--hidden');
+            } else {
+                nav.classList.remove('nav--hidden');
+            }
+            lastY = currentY;
+        }, {passive: true});
+    })();
+    </script>
+
+    </body>
+</html>
