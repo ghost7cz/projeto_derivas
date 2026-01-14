@@ -87,6 +87,7 @@ body {
     gap: 30px;
 }
 
+
 .card {
     background: var(--card-bg);
     backdrop-filter: blur(10px);
@@ -129,6 +130,22 @@ body {
     color: white;
     font-weight: bold;
     transition: 0.3s;
+}
+
+.titulo-portfolio {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 60px;
+    background: linear-gradient(90deg, #fff, var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitulo-portfolio {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #ccc;
 }
 
 @keyframes bounce {
