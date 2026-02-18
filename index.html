@@ -1,87 +1,660 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derivas Editor</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Buquê Premium</title>
+  <style>
+    :root{
+      --text:#f8fafc;
+      --glass: rgba(255,255,255,.10);
+      --glass2: rgba(255,255,255,.06);
+      --border: rgba(255,255,255,.14);
+      --shadow: rgba(0,0,0,.45);
+    }
+    html,body{height:100%; margin:0;}
+    body{
+      overflow:hidden;
+      background:#070a10;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    canvas{
+      position:fixed; inset:0;
+      width:100vw; height:100vh;
+      display:block;
+    }
+    .title{
+      position:fixed;
+      top:18px; left:0; right:0;
+      display:flex; justify-content:center;
+      pointer-events:none;
+      padding:0 16px;
+      z-index:2;
+    }
+    .title .pill{
+      color:var(--text);
+      font-weight:900;
+      letter-spacing:.6px;
+      font-size:clamp(22px, 3.2vw, 46px);
+      text-shadow:
+        0 2px 16px rgba(0,0,0,.55),
+        0 0 22px rgba(255, 214, 102, .22);
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px var(--shadow);
+      min-height: 1.2em;
+      display:flex; align-items:center;
+    }
+    .hint{
+      position:fixed;
+      bottom:12px; left:0; right:0;
+      display:flex; justify-content:center;
+      pointer-events:none;
+      opacity:.78;
+      color:#dbe3f2;
+      font-size:12px;
+      text-shadow: 0 2px 10px rgba(0,0,0,.55);
+      z-index:2;
+    }
+  </style>
 </head>
 <body>
+  <div class="title"><div class="pill" id="typed"></div></div>
+  <canvas id="c"></canvas>
+  <div class="hint">Clique para soltar mais pétalas ✨</div>
 
-    <nav class="site-nav">
-        <div class="brand">
-            <img src="img/botao-de-reproducao.png" alt="Reprodutor de música">
-            <div class="nome" aria-hidden="true">Derivas Editor</div>
-        </div>
-        <div class="nav-links">
-            <a href="#services">Serviços</a>
-            <a href="portfoio.html">Portfólio</a>
-            <a href="#contact">Contato</a>
-        </div>
-    </nav>
+<script>
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
 
-    <div class="bg-overlay"></div>
+  // ---------- Typed title ----------
+  const fullText = "amo você Jovenzinha";
+  const elTyped = document.getElementById("typed");
+  let typed = "";
+  let typeIdx = 0;
+  let typeTimer = 0;
 
-    <section class="hero">
-        <h1>Sua visão, editada com perfeição.</h1>
-        <p>Edição de vídeo profissional e mentoria prática para quem quer evoluir na criação de conteúdo e se destacar no digital.</p>
-        <div class="scroll-indicator">
-            <i class="fas fa-chevron-down"></i>
-        </div>
-    </section>
+  // ---------- Helpers ----------
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeInOut = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+  const rand = (a,b)=>a + Math.random()*(b-a);
 
-    <section class="content-section">
-        <div class="video-container">
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/vO0_06BS9dc?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
-        </div>
+  function resize(){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(innerWidth * dpr);
+    canvas.height = Math.floor(innerHeight * dpr);
+    canvas.style.width = innerWidth + "px";
+    canvas.style.height = innerHeight + "px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  addEventListener("resize", resize, {passive:true});
+  resize();
 
-        <div class="hero">
-             <p>Sou editor de vídeo com foco em storytelling e impacto visual. Além dos projetos profissionais, ajudo editores iniciantes a evoluírem com mentoria prática, feedback real e direcionamento de mercado.</p>
-        </div>
+  const W = () => innerWidth;
+  const H = () => innerHeight;
 
-        <div class="pricing-grid">
-            <div class="card">
-                <h3>Starter</h3>
-                <div class="price">R$ 297</div>
-                <p>Fundamentos da edição, cortes e ritmo para iniciantes.</p>
-            </div>
-            <div class="card" style="border-color: var(--primary);">
-                <h3>Pro</h3>
-                <div class="price">R$ 597</div>
-                <p>Storytelling avançado, Color Grading e Sound Design.</p>
-            </div>
-            <div class="card">
-                <h3>Elite</h3>
-                <div class="price">R$ 997</div>
-                <p>Mentoria 1 a 1 e acompanhamento de carreira profissional.</p>
-            </div>
-        </div>
+  const center = () => ({ x: W()*0.5, y: H()*0.84 });
+  const stemTopTarget = () => ({ x: W()*0.5, y: H()*0.47 });
 
-        <div class="btn-container">
-            <a href= "portfoio.html" class="btn-repo">EXPLORAR PORTFÓLIO COMPLETO</a>
-        </div>
-    </section>
-    </section>
+  const bouquetColors = [
+    "#ff2d55", "#ff6a3d", "#ffd166",
+    "#7c3aed", "#38bdf8", "#34d399",
+    "#fb7185", "#f97316", "#60a5fa"
+  ];
 
-    <script>
-    // Ocultar a navegação ao rolar para baixo, exibir ao rolar para cima
-    (function(){
-        const nav = document.querySelector('.site-nav');
-        if(!nav) return;
-        let lastY = window.scrollY;
-        window.addEventListener('scroll', function(){
-            const currentY = window.scrollY;
-            if (currentY > lastY && currentY > 60) {
-                nav.classList.add('nav--hidden');
-            } else {
-                nav.classList.remove('nav--hidden');
-            }
-            lastY = currentY;
-        }, {passive: true});
-    })();
-    </script>
+  // ---------- Background animated gradient ----------
+  function drawAnimatedBackground(t){
+    // base gradient oscillation
+    const a = (Math.sin(t*0.00022)+1)/2; // 0..1
+    const b = (Math.cos(t*0.00018)+1)/2;
 
-    </body>
+    const x1 = W()*(0.2 + 0.6*a);
+    const y1 = H()*(0.2 + 0.3*b);
+    const x2 = W()*(0.8 - 0.5*b);
+    const y2 = H()*(0.9 - 0.4*a);
+
+    const g = ctx.createLinearGradient(x1,y1,x2,y2);
+    g.addColorStop(0,   "rgb(8, 10, 20)");
+    g.addColorStop(0.35,"rgb(12, 18, 40)");
+    g.addColorStop(0.7, "rgb(20, 16, 45)");
+    g.addColorStop(1,   "rgb(7, 10, 16)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W(),H());
+
+    // soft bokeh blobs
+    ctx.save();
+    for(let i=0;i<6;i++){
+      const px = (i*313 + t*0.02) % (W()+300) - 150;
+      const py = (i*227 + t*0.015) % (H()*0.8 + 240) - 120;
+      const r  = 140 + (i%3)*70;
+      const gg = ctx.createRadialGradient(px,py, 1, px,py, r);
+      gg.addColorStop(0, "rgba(255, 214, 102, .10)");
+      gg.addColorStop(0.45,"rgba(96, 165, 250, .08)");
+      gg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = gg;
+      ctx.beginPath();
+      ctx.arc(px,py,r,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // vignette
+    const v = ctx.createRadialGradient(W()/2, H()*0.7, 60, W()/2, H()*0.7, Math.max(W(),H()));
+    v.addColorStop(0,"rgba(0,0,0,0)");
+    v.addColorStop(1,"rgba(0,0,0,.55)");
+    ctx.fillStyle = v;
+    ctx.fillRect(0,0,W(),H());
+  }
+
+  // ---------- Petals ----------
+  const petals = [];
+  function spawnPetal(x=null,y=null,boost=false){
+    const p = {
+      x: x ?? (Math.random()*W()),
+      y: y ?? (-30 - Math.random()*H()*0.25),
+      r: rand(6,16),
+      vy: rand(0.65, 1.9) * (boost ? 1.5 : 1),
+      vx: rand(-0.9, 0.9),
+      rot: rand(0, Math.PI*2),
+      vr: rand(-0.05, 0.05),
+      wob: rand(0, Math.PI*2),
+      col: bouquetColors[(Math.random()*bouquetColors.length)|0],
+      alpha: rand(0.18, 0.55),
+      drift: rand(0.6, 1.2)
+    };
+    petals.push(p);
+  }
+  for(let i=0;i<60;i++) spawnPetal();
+
+  function burstPetals(n=45){
+    const c = center();
+    for(let i=0;i<n;i++){
+      spawnPetal(c.x + rand(-90,90), c.y - 280 + rand(-60,60), true);
+      const p = petals[petals.length-1];
+      p.vx += rand(-2.2, 2.2);
+      p.vy *= rand(0.55, 0.9);
+    }
+  }
+
+  // ---------- Sparkles ----------
+  const sparkles = [];
+  function spawnSparkle(x,y){
+    sparkles.push({
+      x, y,
+      r: rand(1.2, 2.6),
+      life: rand(260, 520),
+      age: 0,
+      vx: rand(-0.18, 0.18),
+      vy: rand(-0.25, 0.10)
+    });
+  }
+
+  function updateSparkles(dt){
+    for(let i=sparkles.length-1;i>=0;i--){
+      const s = sparkles[i];
+      s.age += dt;
+      s.x += s.vx*(dt/16.7);
+      s.y += s.vy*(dt/16.7);
+      if(s.age >= s.life) sparkles.splice(i,1);
+    }
+  }
+
+  function drawSparkles(){
+    ctx.save();
+    for(const s of sparkles){
+      const t = s.age / s.life;
+      const a = (1 - t) * (0.7 + 0.3*Math.sin(t*Math.PI));
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "rgba(255,255,255,.95)";
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+
+      // tiny cross
+      ctx.globalAlpha = a*0.55;
+      ctx.strokeStyle = "rgba(255,214,102,.8)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(s.x - 4, s.y);
+      ctx.lineTo(s.x + 4, s.y);
+      ctx.moveTo(s.x, s.y - 4);
+      ctx.lineTo(s.x, s.y + 4);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- Draw primitives ----------
+  function drawLeaf(x,y,scale,rot,alpha=1){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(rot);
+    ctx.globalAlpha = alpha;
+    ctx.scale(scale, scale);
+
+    ctx.fillStyle = "rgba(52, 211, 153, .70)";
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.bezierCurveTo(22,-18, 56,-10, 66, 0);
+    ctx.bezierCurveTo(56, 10, 22, 18, 0,0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(0,0,0,.20)";
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.quadraticCurveTo(30,0, 64,0);
+    ctx.stroke();
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawRose(x,y,size,color,open=1,shadow=true){
+    const s = size;
+    ctx.save();
+    ctx.translate(x,y);
+
+    if(shadow){
+      ctx.shadowColor = "rgba(0,0,0,.35)";
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 7;
+    }
+
+    const layers = 8;
+    for(let i=0;i<layers;i++){
+      const t = i/(layers-1);
+      const ang = (i*0.92) + (1-open)*1.35;
+      const rad = s*(0.26 + t*0.56)*open;
+      const w = s*(0.78 - t*0.32);
+      const h = s*(0.48 - t*0.19);
+
+      ctx.save();
+      ctx.rotate(ang);
+      ctx.translate(rad, 0);
+
+      const g = ctx.createRadialGradient(-w*0.2,-h*0.2, 1, 0,0, Math.max(w,h));
+      g.addColorStop(0, "rgba(255,255,255,.20)");
+      g.addColorStop(0.25, color);
+      g.addColorStop(1, "rgba(0,0,0,.14)");
+
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.bezierCurveTo(w*0.25, -h*0.92, w*1.08, -h*0.26, w*0.78, 0);
+      ctx.bezierCurveTo(w*1.08,  h*0.26, w*0.25,  h*0.92, 0,0);
+      ctx.closePath();
+      ctx.globalAlpha = 0.92;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Center bud
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    const g2 = ctx.createRadialGradient(-s*0.1,-s*0.1, 1, 0,0, s*0.9);
+    g2.addColorStop(0, "rgba(255,255,255,.22)");
+    g2.addColorStop(0.28, color);
+    g2.addColorStop(1, "rgba(0,0,0,.18)");
+    ctx.fillStyle = g2;
+    ctx.beginPath();
+    ctx.ellipse(0,0, s*0.36, s*0.28, 0.8, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawRibbon(cx, cy, p, sway){
+    // p: 0..1 visibility
+    ctx.save();
+    ctx.globalAlpha = 0.85 * p;
+    ctx.translate(cx, cy + 28);
+    ctx.rotate(sway*0.015);
+
+    // knot
+    const knotGrad = ctx.createRadialGradient(-8,-8, 1, 0,0, 50);
+    knotGrad.addColorStop(0, "rgba(255,255,255,.18)");
+    knotGrad.addColorStop(0.25,"rgba(255, 90, 140, .95)");
+    knotGrad.addColorStop(1, "rgba(0,0,0,.22)");
+    ctx.fillStyle = knotGrad;
+    ctx.beginPath();
+    ctx.roundRect(-24, -18, 48, 36, 12);
+    ctx.fill();
+
+    // loops
+    function loop(side){
+      ctx.save();
+      ctx.scale(side,1);
+      const g = ctx.createRadialGradient(-22,-6, 1, 0,0, 70);
+      g.addColorStop(0, "rgba(255,255,255,.16)");
+      g.addColorStop(0.25,"rgba(255, 60, 120, .92)");
+      g.addColorStop(1, "rgba(0,0,0,.25)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.bezierCurveTo(42,-30, 82,-10, 78, 16);
+      ctx.bezierCurveTo(72, 48, 30, 30, 0, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    loop(1);
+    loop(-1);
+
+    // tails
+    ctx.globalAlpha *= 0.9;
+    ctx.fillStyle = "rgba(255, 60, 120, .88)";
+    ctx.beginPath();
+    ctx.moveTo(-10, 18);
+    ctx.quadraticCurveTo(-44, 42, -34, 86);
+    ctx.lineTo(-6, 52);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(10, 18);
+    ctx.quadraticCurveTo(44, 42, 34, 86);
+    ctx.lineTo(6, 52);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- Stem & bouquet layout ----------
+  function drawStem(progress, now){
+    const c = center();
+    const topT = stemTopTarget();
+    const t = easeOutCubic(progress);
+
+    const x0 = c.x, y0 = c.y;
+    const x3 = lerp(x0, topT.x, t);
+    const y3 = lerp(y0, topT.y, t);
+
+    // sway increases slightly after grown
+    const sway = Math.sin(now*0.0013) * (0.6 + t*1.6);
+
+    const x1 = lerp(x0, x0 - 38 + sway*3, t);
+    const y1 = lerp(y0, y0 - 170, t);
+    const x2 = lerp(x0, x0 + 28 + sway*2, t);
+    const y2 = lerp(y0, y0 - 340, t);
+
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // glow under stem
+    ctx.strokeStyle = "rgba(52, 211, 153, .18)";
+    ctx.lineWidth = 18;
+    ctx.beginPath();
+    ctx.moveTo(x0,y0);
+    ctx.bezierCurveTo(x1,y1,x2,y2,x3,y3);
+    ctx.stroke();
+
+    // main stem
+    ctx.strokeStyle = "rgba(34, 197, 94, .92)";
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.moveTo(x0,y0);
+    ctx.bezierCurveTo(x1,y1,x2,y2,x3,y3);
+    ctx.stroke();
+
+    // highlight
+    ctx.strokeStyle = "rgba(255,255,255,.12)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x0-2,y0-10);
+    ctx.bezierCurveTo(x1-2,y1, x2-2,y2, x3-2,y3);
+    ctx.stroke();
+
+    // leaves appear mid-growth
+    const leafT = clamp((t - 0.35)/0.55, 0, 1);
+    if(leafT > 0){
+      const l1x = lerp(x0, x1, 0.58);
+      const l1y = lerp(y0, y1, 0.62);
+      const l2x = lerp(x0, x2, 0.64);
+      const l2y = lerp(y0, y2, 0.58);
+
+      drawLeaf(l1x, l1y, 0.78, -0.95 + sway*0.04, leafT);
+      drawLeaf(l2x, l2y, 0.72,  0.55 + sway*0.03, leafT);
+    }
+
+    ctx.restore();
+
+    return { x: x3 + sway*2, y: y3, sway };
+  }
+
+  function bouquetPoints(topX, topY){
+    const pts = [];
+    const spread = Math.min(W(), H()) * 0.19;
+    const rows = [
+      { n: 3, r: spread*0.36, y: -spread*0.08 },
+      { n: 4, r: spread*0.58, y: -spread*0.22 },
+      { n: 5, r: spread*0.84, y: -spread*0.40 }
+    ];
+    for(const row of rows){
+      for(let i=0;i<row.n;i++){
+        const tt = row.n === 1 ? 0 : (i/(row.n-1))*2 - 1; // -1..1
+        const x = topX + tt*row.r;
+        const y = topY + row.y - Math.abs(tt)*row.r*0.10;
+        pts.push({x,y});
+      }
+    }
+    pts.push({x: topX, y: topY - spread*0.12});
+    return pts;
+  }
+
+  function drawBouquetWrap(topX, topY, p, sway){
+    ctx.save();
+    ctx.globalAlpha = 0.65 * p;
+    ctx.translate(topX, topY + 16);
+    ctx.rotate(sway*0.012);
+
+    // paper shadow
+    ctx.fillStyle = "rgba(0,0,0,.20)";
+    ctx.beginPath();
+    ctx.moveTo(-146, 34);
+    ctx.quadraticCurveTo(0, 150, 146, 34);
+    ctx.quadraticCurveTo(0, 68, -146, 34);
+    ctx.closePath();
+    ctx.fill();
+
+    // paper gradient
+    const g = ctx.createLinearGradient(-140, 0, 140, 160);
+    g.addColorStop(0, "rgba(255,255,255,.14)");
+    g.addColorStop(0.5,"rgba(255,255,255,.06)");
+    g.addColorStop(1, "rgba(255,255,255,.10)");
+    ctx.fillStyle = g;
+    ctx.strokeStyle = "rgba(255,255,255,.14)";
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(-140, 28);
+    ctx.quadraticCurveTo(0, 150, 140, 28);
+    ctx.quadraticCurveTo(0, 64, -140, 28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // inner fold
+    ctx.globalAlpha *= 0.85;
+    ctx.fillStyle = "rgba(255,255,255,.05)";
+    ctx.beginPath();
+    ctx.moveTo(-110, 34);
+    ctx.quadraticCurveTo(0, 120, 110, 34);
+    ctx.quadraticCurveTo(0, 60, -110, 34);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- Petals update/draw ----------
+  function updatePetals(dt, wind){
+    // keep density
+    if(petals.length < 160 && Math.random() < 0.12) spawnPetal();
+    for(let i=petals.length-1;i>=0;i--){
+      const p = petals[i];
+      p.wob += dt*0.0022;
+      p.rot += p.vr * (dt/16.7);
+
+      // wind + wobble
+      const w = wind * p.drift + Math.sin(p.wob)*0.35;
+
+      p.x += (p.vx + w) * (dt/16.7);
+      p.y += p.vy * (dt/16.7);
+
+      if(p.y > H()+50 || p.x < -120 || p.x > W()+120){
+        petals.splice(i,1);
+      }
+    }
+  }
+
+  function drawPetals(){
+    ctx.save();
+    for(const p of petals){
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+
+      const w = p.r*1.15;
+      const h = p.r*0.72;
+
+      const grad = ctx.createRadialGradient(-w*0.2, -h*0.2, 1, 0,0, Math.max(w,h));
+      grad.addColorStop(0, "rgba(255,255,255,.20)");
+      grad.addColorStop(0.22, p.col);
+      grad.addColorStop(1, "rgba(0,0,0,.25)");
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(-w*0.2, 0);
+      ctx.bezierCurveTo(-w*0.2, -h,  w*0.95, -h*0.55,  w*0.95, 0);
+      ctx.bezierCurveTo( w*0.95,  h*0.55, -w*0.2,  h, -w*0.2, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // spec highlight
+      ctx.globalAlpha *= 0.35;
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.beginPath();
+      ctx.ellipse(w*0.25, -h*0.15, w*0.18, h*0.14, 0.6, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.setTransform(1,0,0,1,0,0);
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- Timeline ----------
+  let start = performance.now();
+  let last = start;
+
+  const T_GROW = 2500;
+  const T_BLOOM = 2400;
+  const T_PETALS = 1200;
+
+  // click adds petals
+  addEventListener("click", () => burstPetals(55));
+
+  function loop(now){
+    const dt = now - last;
+    last = now;
+
+    // typing effect
+    typeTimer += dt;
+    if(typeIdx < fullText.length && typeTimer > 70){
+      typeTimer = 0;
+      typed += fullText[typeIdx++];
+      elTyped.textContent = typed;
+    }
+
+    ctx.clearRect(0,0,W(),H());
+
+    // timeline progress
+    const t = now - start;
+    const growP  = clamp(t / T_GROW, 0, 1);
+    const bloomP = clamp((t - T_GROW) / T_BLOOM, 0, 1);
+
+    // wind
+    const wind = Math.sin(now*0.0009) * 0.9 + Math.sin(now*0.0017) * 0.45;
+
+    // background
+    drawAnimatedBackground(now);
+
+    // petals start stronger after bloom
+    const petalP = clamp((t - (T_GROW + T_BLOOM*0.45)) / T_PETALS, 0, 1);
+    if(petalP > 0 && Math.random() < 0.42 * petalP) spawnPetal();
+
+    updatePetals(dt, wind);
+    drawPetals();
+
+    // stem
+    const top = drawStem(growP, now);
+
+    // bouquet
+    const bouquetAppear = easeInOut(bloomP);
+    if(bouquetAppear > 0){
+      // wrap paper behind
+      drawBouquetWrap(top.x, top.y, bouquetAppear, top.sway);
+
+      // roses
+      const pts = bouquetPoints(top.x, top.y);
+      const sway = Math.sin(now*0.0012) * (1.1 + bouquetAppear*1.5);
+
+      // sparkles around bouquet
+      if(bloomP > 0.25 && Math.random() < 0.45){
+        const sp = pts[(Math.random()*pts.length)|0];
+        spawnSparkle(sp.x + rand(-18,18), sp.y + rand(-18,18));
+      }
+
+      // draw roses back-to-front
+      for(let i=0;i<pts.length;i++){
+        const p = pts[i];
+        const depth = (p.y - top.y);
+        const size = (28 + (i%4)*7) * (0.62 + bouquetAppear*0.62);
+        const open = clamp(0.12 + bouquetAppear, 0, 1);
+        const col = bouquetColors[i % bouquetColors.length];
+
+        ctx.save();
+        ctx.globalAlpha = bouquetAppear;
+        drawRose(p.x + sway*(depth*0.006), p.y, size, col, open, true);
+        ctx.restore();
+      }
+
+      // ribbon on top of wrap
+      drawRibbon(top.x, top.y, bouquetAppear, top.sway);
+
+      // one-time petal burst when ready
+      if(!loop._burstDone && bloomP > 0.93){
+        loop._burstDone = true;
+        burstPetals(70);
+      }
+    }
+
+    // sparkles
+    updateSparkles(dt);
+    drawSparkles();
+
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
 </html>
